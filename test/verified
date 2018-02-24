@@ -1,0 +1,359 @@
+date => [ '2/3/2015',
+  '2',
+  '3',
+  '2015',
+  index: 0,
+  input: '2/3...',
+  rule: 'mdy',
+  lastIndex: 8 ]
+-- date2 ----------------
+[ [ '3', index: 0, input: '3/4...', rule: 'month', lastIndex: 1 ],
+  [ '/', index: 1, input: '/4/...', rule: '\'/\'', lastIndex: 2 ],
+  [ '4', index: 2, input: '4/2015', rule: 'day', lastIndex: 3 ],
+  [ '/', index: 3, input: '/2015', rule: '\'/\'', lastIndex: 4 ],
+  [ '2015', index: 4, input: '2015', rule: 'year', lastIndex: 8 ],
+  rule: 'mdy',
+  index: 0,
+  lastIndex: 8 ]
+mdy  
+  month "3"  
+  '/' "/"  
+  day "4"  
+  '/' "/"  
+  year "2015"
+-- sum show ----------------
+sum  
+  num "1"  
+  _1    
+    _1      
+      '+' "+"      
+      num "2"    
+    _3      
+      '+' "+"      
+      num "3"
+[ [ '1', index: 0, input: '1+2+3', rule: 'num', lastIndex: 1 ],
+  [ [ [Array], [Array] ], [ [Array], [Array] ] ],
+  rule: 'sum',
+  index: 0,
+  lastIndex: 5 ]
+sum  
+  num "1"  
+  _1    
+    plus "+2", "+", "2"    
+    plus "+3", "+", "3"
+[ [ '1', index: 0, input: '1+2+3', rule: 'num', lastIndex: 1 ],
+  [ [ '+2',
+      '+',
+      '2',
+      index: 1,
+      input: '+2+3',
+      rule: 'plus',
+      lastIndex: 3 ],
+    [ '+3', '+', '3', index: 3, input: '+3', rule: 'plus', lastIndex: 5 ] ],
+  rule: 'sum',
+  index: 0,
+  lastIndex: 5 ]
+-- & ! abba ----------------
+abba
+^ ^ 0..2 abba ab
+[ 'ab', index: 0, input: 'abba', rule: 'ab', lastIndex: 2 ]
+
+abba
+^ ^ 0..2 abba ab
+[ 'ab', index: 0, input: 'abba', rule: 'ab', lastIndex: 2 ]
+
+abba
+  ^ ^ 2..4 abba 'ab' ! ba
+[ 'ba', index: 2, input: 'ba', rule: 'ba', lastIndex: 4 ]
+
+abba
+^   ^ 0..4 abba 'abba' ! 'x' !
+[ [],
+  [ 'ab', index: 0, input: 'abba', rule: 'ab', lastIndex: 2 ],
+  [],
+  [ 'ba', index: 2, input: 'ba', rule: 'ba', lastIndex: 4 ],
+  [],
+  rule: 'abba',
+  index: 0,
+  lastIndex: 4 ]
+
+abba  
+  _  
+  ab "ab"  
+  _  
+  ba "ba"  
+  _
+-- paren ----------------
+par  
+  '(' "("  
+  _1    
+    _1      
+      txt "x"      
+      _2        
+        par          
+          '(' "("          
+          _3            
+            _3              
+              txt "y"              
+              _          
+          ')' ")"    
+    _5      
+      txt "z"      
+      _  
+  ')' ")"
+-- define rules ----------------
+[ [ '1', index: 0, input: '1+2...', rule: 'num', lastIndex: 1 ],
+  [ [ '+2',
+      '+',
+      '2',
+      index: 1,
+      input: '+2-3+4',
+      rule: 'plus',
+      lastIndex: 3 ],
+    [ '-3',
+      '-',
+      '3',
+      index: 3,
+      input: '-3+4',
+      rule: 'plus',
+      lastIndex: 5 ],
+    [ '+4', '+', '4', index: 5, input: '+4', rule: 'plus', lastIndex: 7 ] ],
+  rule: 'sum',
+  index: 0,
+  lastIndex: 7 ]
+-- arith exp ----------------
+exp  
+  sum    
+    term      
+      num "1"    
+    _  
+  _1    
+    _1      
+      aop "+"      
+      sum        
+        term          
+          num "2"        
+        _3          
+          _3            
+            mop "*"            
+            term              
+              num "3"
+[ [ [ [Array], rule: 'term', index: 0, lastIndex: 1 ],
+    [],
+    rule: 'sum',
+    index: 0,
+    lastIndex: 1 ],
+  [ [ [Array], [Array] ] ],
+  rule: 'exp',
+  index: 0,
+  lastIndex: 5 ]
+-- eval arith exp ----------------
+exp  
+  sum    
+    term      
+      num "1"    
+    _  
+  _1    
+    _1      
+      aop "+"      
+      sum        
+        term          
+          num "2"        
+        _    
+    _3      
+      aop "+"      
+      sum        
+        term          
+          num "3"        
+        _    
+    _5      
+      aop "+"      
+      sum        
+        term          
+          num "4"        
+        _
+1+2+3+4 10
+-- (a+/b*)* ----------------
+ab  
+  _0    
+    _0      
+      a "a"    
+    _1      
+      b "bb"    
+    _3      
+      a "a"
+-- prose Markdown notations ----------------
+prose  
+  _0    
+    _0      
+      text "this "    
+    _5      
+      em "*or*" "", "or"    
+    _9      
+      text " that, "    
+    _16      
+      code "`and the`", "`", "and the"    
+    _25      
+      text " other thing."
+prose  
+  _0    
+    _0      
+      text "this "    
+    _5      
+      em "_or that, __and__ the_", "or that ... d__ the" ""    
+    _27      
+      text " other thing."
+prose  
+  _0    
+    _0      
+      text "this "    
+    _5      
+      elem "*or*" "" "" "" "" "", "or" "" ""    
+    _9      
+      text " that, "    
+    _16      
+      elem "`and the`", "`", "and the" "" "" "" "" "" ""    
+    _25      
+      text " other thing."
+prose  
+  _0    
+    _0      
+      text "this "    
+    _5      
+      elem "_or that, __and__ the_" "" "" "" "", "or that ... d__ the" "" "" ""    
+    _27      
+      text " other thing."
+doc=> doc  
+  _0    
+    chunk "¬##›Hello World¬", "##", "›Hello World"    
+    chunk "¬Something or other...¬", "Somethi ... ther..." ""    
+    chunk "book¬›title›Good Coo ... 123456789¬", "book", "›title› ... 3456789"    
+    chunk "Last line..", "Last line.." ""
+-- foil firstword blocks with semantic actions----------------
+defns= {}
+-- arith exp with semantic actions----------------
+7
+10
+10
+-- parsing with semantic actions----------------
+exp  
+  num "1", "++++"  
+  num "2"
+[ [ '1', index: 0, input: '1+2', rule: 'num', lastIndex: 1 ],
+  '++++',
+  [ '2', index: 2, input: '2', rule: 'num', lastIndex: 3 ],
+  rule: 'exp',
+  index: 0,
+  lastIndex: 3 ]
+sym= % undefined..
+[ [ '1', index: 0, input: '1%2', rule: 'num', lastIndex: 1 ],
+  '?',
+  [ '2', index: 2, input: '2', rule: 'num', lastIndex: 3 ],
+  rule: 'exp',
+  index: 0,
+  lastIndex: 3 ]
+-- ES6 parsing with semantic actions----------------
+[ [ '1', index: 0, input: '1+2', rule: 'num', lastIndex: 1 ],
+  '++++',
+  [ '2', index: 2, input: '2', rule: 'num', lastIndex: 3 ],
+  rule: 'exp',
+  index: 0,
+  lastIndex: 3 ]
+-- datetime ----------------
+[ '3/4/2015',
+  '3',
+  '4',
+  '2015',
+  index: 0,
+  input: '3/4...',
+  rule: 'mdy',
+  lastIndex: 8 ]
+-- expr ----------------
+42
+-- exprn ----------------
+-- The arith example from documentation ----------------
+3
+2015-3-4
+-- semantic action using an external symbol table ---------
+&#x3b2;
+-- Grit in Grit ---------
+[ { id: 'foo',
+    type: ':=',
+    body: [ ' ', 'bar', ' ', 'bax', '   ' ],
+    act: [ ' boo' ] },
+  { id: 'bar',
+    type: ':~',
+    body: [ ' ', 's* (w+) ' ],
+    act: [ ' string' ] },
+  { id: 'baz',
+    type: ':~',
+    body: [ ' ', 's* (d)+ ' ],
+    act: [ ' number' ] },
+  { id: 'bax', type: '::', body: '', act: [ ' foobar', '\n' ] } ]
+-- Grit and PEG in Grit ---------
+[ { name: 'foo', type: ':=', bod: [ ' bar bax :: boo' ] },
+  { name: 'bar', type: ':~', bod: [ ' s* (w+) :: string' ] },
+  { name: 'baz', type: ':~', bod: [ ' s* (d)+ :: number' ] },
+  { name: 'bax', type: '::', bod: [ ' foobar', '\n', '' ] } ]
+[ [ [ [Array], [Array] ], rule: 'seq', index: 0, lastIndex: 8 ],
+  [],
+  [ [ [Array], [Array] ] ],
+  rule: 'peg',
+  index: 0,
+  lastIndex: 14 ]
+-- Trace report example... ---------
+1+2
+^^ 0..1 exp sum term num
+[ '1', '1', index: 0, input: '1+2', rule: 'num', lastIndex: 1 ]
+=> 1
+
+1+2
+^^ 0..1 exp sum term
+[ 1, rule: 'term', index: 0, lastIndex: 1 ]
+=> 1
+
+1+2
+^^ 0..1 exp sum mulop !
+[ 1, [], rule: 'sum', index: 0, lastIndex: 1 ]
+=> 1
+
+1+2
+ ^^ 1..2 exp addop
+[ '+', '+', index: 1, input: '+2', rule: 'addop', lastIndex: 2 ]
+=> +
+
+1+2
+  ^^ 2..3 exp sum term num
+[ '2', '2', index: 2, input: '2', rule: 'num', lastIndex: 3 ]
+=> 2
+
+1+2
+  ^^ 2..3 exp sum term
+[ 2, rule: 'term', index: 2, lastIndex: 3 ]
+=> 2
+
+1+2
+  ^^ 2..3 exp sum mulop !
+[ 2, [], rule: 'sum', index: 2, lastIndex: 3 ]
+=> 2
+
+1+2
+^  ^ 0..3 exp addop !
+[ 1, [ [ '+', 2 ] ], rule: 'exp', index: 0, lastIndex: 3 ]
+=> 3
+
+-- Indented blocks... ---------
+Bad [ ' ' ] [ '', '\t' ]
+Bad [ '\t' ] [ '', ' ' ]
+[ [ { lnum: 1, indent: 0, line: '' },
+    { lnum: 2, indent: 1, line: '## Hello World' },
+    { lnum: 3, indent: 1, line: '' },
+    { lnum: 4, indent: 1, fault: [Array], line: 'A para..' },
+    { lnum: 5, indent: 1, line: '' },
+    { lnum: 6, indent: 1, fault: [Array], line: 'eg' },
+    { lnum: 7, indent: 2, line: 'indented..' },
+    { lnum: 8, indent: 2, line: '' },
+    { lnum: 9, indent: 1, line: 'Another ...' } ],
+  rule: 'lines',
+  index: 0,
+  lastIndex: 60 ]

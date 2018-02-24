@@ -1,0 +1,12 @@
+#	ReadMe
+
+This project is for maintenance of the `grit.js` grammar parser code.
+
+
+##	Developer Conventions
+
+Command line tools are in the `bin/` directory.
+
+Some tools may assume that the current directory is the folder containing this `Readme` file.
+
+In particular the `bin/verify` script runs a regression test, using `test/test-all.js`.
