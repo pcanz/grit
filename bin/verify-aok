@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Accept that verify is generating correct results, updates verified results....
+
+# cd is assumed to be parent of the test/ directory..
+
+cd test  # restored at end
+
+node test-all.js > verified
+
+echo test/verified has been updated with new test/results 
+
+cd -  # retore cd

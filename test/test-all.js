@@ -94,18 +94,18 @@ var paren = new Grit(
 var p = paren.parse("(x(y)z)");
 console.log(paren.show(p));
 
-console.log("-- define rules ----------------");
-
-var defs = Grit("sum  := num plus*");
-
-defs.define`
-	plus :~ (%add) (%num)
-	num  :~ \d+
-	add  :~ [+-]
-`;
-
-var ds = defs.parse("1+2-3+4");
-console.log(ds);
+// console.log("-- define rules ----------------");
+// 
+// var defs = Grit("sum  := num plus*");
+// 
+// defs.define`
+// 	plus :~ (%add) (%num)
+// 	num  :~ \d+
+// 	add  :~ [+-]
+// `;
+// 
+// var ds = defs.parse("1+2-3+4");
+// console.log(ds);
 
 console.log("-- arith exp ----------------");
 

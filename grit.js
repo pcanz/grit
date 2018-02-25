@@ -34,16 +34,12 @@
 
 		myGrit.parse("input..")
 
-		myGrit.trace.parse("input..") // trace reporting on for this parse...
-
 	 Using JavaScript ES5 ..............................................................
 
 		var myGrit = new Grit("rule0..", "rule1..", ...); // a new Grit grammar
 		var myGrit = Grit("rule0..", "rule1", ...); // same thing
 
 		myGrit.parse("input..")
-
-		myGrit.trace.parse("input..") // trace reporting on for this parse...
 
 
 	 Semantic Actions ....................................................................
@@ -59,12 +55,12 @@
 	 Note:
 
 	 * Semantic action function names must not conflict with the reserved names:
-	 parse, trace, _privateNames...
+	 	parse, trace, _privateNames...
 
 	 * Context for semantic actions is an instance of a Parser object:
-	 input = the input string being parsed
-	 pos = current parser position
-	 grit = the grammar rules
+	 	input = the input string being parsed
+	 	pos   = current parser position
+	 	grit  = the grammar rules
 
 	 */
 
@@ -73,7 +69,7 @@
 	var Grit = function() { // call may be ES5 or ES6, but Grit itself does not require ES6
 		var grit = this; // may be called as: Grit() or new Grit()
 		if (!(this instanceof Grit)) { grit = new Grit(); }
-		grit.define.apply(grit, arguments); // i.e. ...arguments, but avoids using ES6 in Grit
+		grit._define.apply(grit, arguments); // i.e. ...arguments, but avoids using ES6 in Grit
 		return grit;
 	}
 
@@ -87,8 +83,9 @@
 
 	var PEG_RULE = ':=', REGEXP_RULE = ':~', FUN_RULE = '::';
 
-	grip.define = function() { // rule definitions, either a tag template or standard arguments....
+	grip._define = function() { // rule definitions, either a tag template or standard arguments....
 		if (arguments.length === 0) return;
+		if (this._compiled) throw new Error("*** woops... grammar has been defined..")
 		if (!this._rules) this._init(); // define first rule(s)...
 		var template = arguments[0]; // may be either a tag template or standard arguments....
 		if (template instanceof Array &&  template.raw) { // ES6 tag template...
@@ -101,13 +98,14 @@
 			}
 			this._createRules(args); // may be none e.g. new Grit();
 		}
-		this._compiled = false; // compile on next .parse()
+		this._compile();
 	}
 
 	grip._init = function() { // new Grit, first call to define rules...
 		this._rules = []; // define source text
 		this._rule = {}; // compiled rules
 		this._action = {}; // semantic action, type translators
+		this._actName = {}; // semantic action, function name...
 		this._actArgs = {}; // semantic action, type translator arguments...
 		this._actionTrace = {}; // action trace flag from grammar rule :: $
 		this._actionTraceFlag = false; // any _actionTrace[rule] :: $ triggered
@@ -175,7 +173,12 @@
 // compile rules ----------------------------------------------------------------------
 
 	grip._compile = function() {
+		if (this._compiled) return [];
 		var errors = this._compileRules();
+		if (errors.length > 0) {
+			errors.unshift(this._rules[0].name + " grammar errors:");
+			throw new Error(errors.join('\n\t'))
+		}
 		this._compiled = true;
 		return errors
 	}
@@ -189,7 +192,7 @@
 					this._rule[rule.name] = new RegExp("^(?:"+this._makeRegExp(rule)+")", "g");
 				} catch(err) {
 					report(["Rule ", rule.name,
-						' has invalid RegExp /', rule.body.trim(),  "/ : ", err])
+						" has invalid RegExp /", rule.body.trim(),  "/ : ", err])
 				}
 			} else if (rule.type === PEG_RULE) {
 				this._rule[rule.name] = GRIT.parse(rule.body);
@@ -212,12 +215,7 @@
 						this._actionTraceFlag = true;
 					}
 					try {
-						act = this._compileAction(rule, act);
-						if (typeof act === 'function') {
-							this._action[rule.name] = act;
-						} else
-							report(["Rule ", rule.name, " ... :: ", act,
-								'\tBad semantic action: function expected.'])
+						this._action[rule.name] = this._compileAction(rule, act);
 					}  catch(err) {
 						report(["Rule ", rule.name, " ... :: ", act,
 							'\tBad semantic action ', err])
@@ -253,11 +251,12 @@
 			if (fun === 'function') { // :: function(...) {... }
 				fn = eval('(' + act + ')');
 			} else { //  :: fun ....
-				fn = this[fun]; // grammar function...
+				this._actName[rule.name] = fun; // grammar function name..
 				this._actArgs[rule.name] = ax[2]; // arg string
+				fn = fun;
 			}
 		}
-		return fn;
+		return fn; // function or string (name of function)
 	}
 
 // compose RegExp rule -------------------------------------
@@ -294,11 +293,7 @@
 			throw new Error("Parsing with empty grammar, no rules defined.")
 		}
 
-		if (!this._compiled) {
-			var errors = this._compile()
-			if (errors.length > 0)
-				throw new Error(errors.unshift(begin.name," grammar errors:").join('\n\t'))
-		}
+		if (!this._compiled) throw new Error("*** woops... grammar not compiled?..")
 
 		var parser = new Parser(this, input, trace);
 
@@ -370,6 +365,15 @@
 			var node = this.ruleNode(result, name, start); // array node;
 			this._last[name] = node; // TODO node to use as pack-rat memo
 			var action = this.grit._action[name];
+			if (typeof action === 'string') { // unresolved function name...
+				var fact = this.grit[action];
+				if (typeof fact !== 'function') {
+					throw new Error("Rule "+name+" ... :: "+action+
+							"\tBad semantic action: function expected.")
+				}
+				this.grit._action[name] = fact;
+				action = fact; // resolved..
+			}
 			var product = result; // or result from action...
 			if (action) {
 				try {
@@ -612,7 +616,7 @@
 	}
 
 	GRIT.do.quote = function (parser, ruleTree) {
-		var qt = ruleTree[0].trim(); // 'xxx'
+		var qt = ruleTree[0].trim(); // 'xxx' or \s* "xxx"
 		if (!parser.grit._rule[qt]) { // define a new rule for qt...
 			var str = ruleTree[1] || ruleTree[2]; // '...' | "..."
 			var literal = str.replace(/([^a-zA-Z0-9])/g,"\\$1")
@@ -621,28 +625,6 @@
 		}
 		return parser.parseRule(qt);
 	}
-
-	// GRIT.do.quote = function (parser, ruleTree) {
-	// 	var qt = ruleTree[0].trim(); // 'xxx'
-	// 	if (!parser.grit._rule[qt]) { // define a new rule for qt...
-	// 		var str = ruleTree[1] || ruleTree[2]; // '...' | "..."
-	// 		var regex = new RegExp("^(?:"+str.replace(/([^a-zA-Z0-9])/g,"\\$1")+")"); // TODO improve..
-	// 		parser.grit._rule[qt] = regex;
-	// 	}
-	// 	return parser.parseRule(qt);
-	// }
-
-	// GRIT.do.quote = function (parser, ruleTree) {
-	// 	var qt = ruleTree[0].trim(); // 'xxx'
-	// 	var rule = parser.grit._rule[qt];
-	// 	if (!rule) { // memo...
-	// 		var str = ruleTree[1] || ruleTree[2]; // '...' | "..."
-	// 		var regex = new RegExp("^\\s*("+str.replace(/([^a-zA-Z0-9])/g,"\\$1")+")\\s*"); // TODO improve..
-	// 		parser.grit._rule[qt] = regex;
-	// 	}
-	// 	return parser.parseRule(qt);
-	// }
-
 
 // pretty print syntax tree.....................................................
 
