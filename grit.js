@@ -85,7 +85,7 @@
 
 	grip._define = function() { // rule definitions, either a tag template or standard arguments....
 		if (arguments.length === 0) return;
-		if (this._compiled) throw new Error("*** woops... grammar has been defined..")
+		if (this._compiled) throw new Error("*** woops... grammar already defined..")
 		if (!this._rules) this._init(); // define first rule(s)...
 		var template = arguments[0]; // may be either a tag template or standard arguments....
 		if (template instanceof Array &&  template.raw) { // ES6 tag template...
@@ -667,49 +667,6 @@
 		return this._atIndex(term[0]);
 	}
 
-
-// Helper type translators ======================================================================
-
-// Parser delegates to Grit so semantic actions can access these combinatiors via this.xxx
-
-	grip.string = function (m, n) {  // TODO PEG rules => join ?
-		// return n||m;
-		return ((typeof m == 'string')? (n||m) : this.flatten(m).join(''))
-	}
-
-	grip.toString = function (tree) {  // TODO PEG rules => join ?
-		return this.flatten(tree).join('')
-	}
-
-	grip.number = function (m, n) {
-		return Number(n||m);
-	}
-
-	grip.trim = function (a, b) {
-		return b||a;
-	}
-
-	grip.join = function (list) {
-		if (!list) return "";
-		if (typeof list === 'string') return list;
-		for (var i=0; i<list.length; i++) {
-			var term = list[i];
-			if (typeof term === 'string') continue;
-			list[i] = this.join(term);
-		}
-		return list.join('');
-	}
-
-	grip.flatten = function (arr) {
-		var that = this;
-		if (Array.isArray(arr)) {
-			return arr.reduce(function (flat, toFlatten) {
-				return flat.concat(that.flatten(toFlatten));
-			}, []);
-		} else {
-			return arr;
-		}
-	}
 
 // == Expose Grit ============================================================================================
 
