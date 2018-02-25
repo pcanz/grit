@@ -640,7 +640,7 @@ eg
 [MyWordDocStyle]
 
 &
-	@import  myword/pkgs/demo.mmk
+	@import  ../myword/pkgs/demo.mmk
 	
 	[MyWordDocStyle] <- <style type="text/css"> is
 		body {
