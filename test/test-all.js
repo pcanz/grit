@@ -304,6 +304,8 @@ exp.sum = function(term, ops) { // sum  = term (mop term)*
 exp.term = function(num, expn) { // term = num / '(' exp ')'
 	return expn? exp.exp(expn) : num;
 }
+exp.number = (_, num) => Number(num)
+exp.string = (_, s) => s
 
 exp.arith = function(n, op, m) {
 	if (op === '+') return n+m;
@@ -398,6 +400,8 @@ var expr = Grit`
 	op   :~ \s* ([+-])    :: string
 `;
 expr.calc = (n, op, m) => op==='+'? n+m : n-m;
+expr.number = (_, num) => Number(num)
+expr.string = (_, s) => s
 
 var x = expr.parse("12 + 30"); // x = 42
 
@@ -515,11 +519,22 @@ grit.rules = function(ws, rules) {
 
 grit.rule = function (id, ws, body, actn) {
 	var type = body[0][0]; // :=|:~|::
-	var body = this.flatten(body[1]);
-	var act = actn[0]? this.flatten(actn[0][1]) : "";
+	var body = grit.flatten(body[1]);
+	var act = actn[0]? grit.flatten(actn[0][1]) : "";
 	if (type === '::') {act = body; body = "";}
 	var term = {id:id[0], type, body, act};
 	return term;
+}
+
+grit.flatten = function (arr) {
+	var that = this;
+	if (Array.isArray(arr)) {
+		return arr.reduce(function (flat, toFlatten) {
+			return flat.concat(that.flatten(toFlatten));
+		}, []);
+	} else {
+		return arr;
+	}
 }
 
 var test = `
@@ -557,8 +572,19 @@ grit.rules = function(ws, rules) {
 grit.rule = function (label, body) {
 	var name = label[1];
 	var type = label[2];
-	var bod = this.flatten(body);
+	var bod = grit.flatten(body);
 	return {name, type, bod };
+}
+
+grit.flatten = function (arr) {
+	var that = this;
+	if (Array.isArray(arr)) {
+		return arr.reduce(function (flat, toFlatten) {
+			return flat.concat(that.flatten(toFlatten));
+		}, []);
+	} else {
+		return arr;
+	}
 }
 
 var test = `
@@ -595,15 +621,15 @@ console.log(p);
 console.log("-- Trace report example... ---------");
 
 var arith = Grit`
-	exp    := sum (addop sum)*       :: reduce
-	sum    := term (mulop term)*     :: reduce
-	term   := num / '(' exp ')'      :: trim
+	exp    := sum (addop sum)*       :: $reduce
+	sum    := term (mulop term)*     :: $reduce
+	term   := num / '(' exp ')'      :: term
 	addop  :~ \s*([-+])              :: string
 	mulop  :~ \s*([*/])              :: string
 	num    :~ \s*([0-9]+)\s*         :: number
 `;
 
-arith.trim = (a,b) => b||a;
+arith.term = (a,b) => b||a;
 
 arith.reduce = (n, ops) => {
 	for (var i=0; i<ops.length; i+=1) {
@@ -612,6 +638,9 @@ arith.reduce = (n, ops) => {
 	}
 	return n;
 }
+arith.number = (_, num) => Number(num)
+arith.string = (_, s) => s
+
 
 arith['+'] = (n,m) => n+m;
 arith['-'] = (n,m) => n-m;
@@ -625,7 +654,7 @@ arith['-'] = (n,m) => n-m;
 // 	num    :~ \s*([0-9]+)\s*
 // `;
 
-var x = arith.parse("1+2", true); // turn on the trace...
+var x = arith.parse("1+2"); // $reduce trace...
 
 
 console.log("-- Indented blocks... ---------");

@@ -283,34 +283,9 @@ sym= % undefined..
   lastIndex: 14 ]
 -- Trace report example... ---------
 1+2
-^^ 0..1 exp sum term num
-[ '1', '1', index: 0, input: '1+2', rule: 'num', lastIndex: 1 ]
-=> 1
-
-1+2
-^^ 0..1 exp sum term
-[ 1, rule: 'term', index: 0, lastIndex: 1 ]
-=> 1
-
-1+2
 ^^ 0..1 exp sum mulop !
 [ 1, [], rule: 'sum', index: 0, lastIndex: 1 ]
 => 1
-
-1+2
- ^^ 1..2 exp addop
-[ '+', '+', index: 1, input: '+2', rule: 'addop', lastIndex: 2 ]
-=> +
-
-1+2
-  ^^ 2..3 exp sum term num
-[ '2', '2', index: 2, input: '2', rule: 'num', lastIndex: 3 ]
-=> 2
-
-1+2
-  ^^ 2..3 exp sum term
-[ 2, rule: 'term', index: 2, lastIndex: 3 ]
-=> 2
 
 1+2
   ^^ 2..3 exp sum mulop !
