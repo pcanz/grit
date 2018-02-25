@@ -80,7 +80,7 @@ var andnot = new Grit(
 	"ba :~ ba "
 );
 
-var abba = andnot.parse("abba",true);
+var abba = andnot.parse_trace("abba");
 console.log(andnot.show(abba));
 
 

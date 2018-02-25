@@ -286,33 +286,25 @@
 
 	var RULEMAX = 100; // max rule depth, to catch looping..
 
-	grip.parse = function (input, trace) {
+	grip.parse = function (input) {
+		return this._parse(new Parser(this, input))
+	}
+
+	grip.parse_trace = function (input) {
+		var p = new Parser(this, input)
+		p._traceFlag = true;
+		return this._parse(p)
+	}
+
+	grip._parse = function (parser) {
 		this._lastMatch = null;
 		var begin = this._rules[0]; // start at first rule...
-		if (!begin) {
-			throw new Error("Parsing with empty grammar, no rules defined.")
-		}
-
-		if (!this._compiled) throw new Error("*** woops... grammar not compiled?..")
-
-		var parser = new Parser(this, input, trace);
-
-		if (typeof input !== 'string') {
-			if (begin.type === FUN_RULE) { // no need to parse input, just pass it on...
-				var action = this._action[begin.name];
-				if (action) {
-					try {
-						return action.apply(parser, input);
-					} catch (err) {
-						throw new Error(["Rule ", begin.name, " :: semantic action failed:\n\t", err].join(''));
-					}
-				}
-			}
-			throw new Error(["Grammar ", begin.name, " unable to parse:\n\t", input].join())
-		}
+		if (!begin) throw new Error("Parsing with empty grammar, no rules defined.")
+ 		if (!this._compiled) throw new Error("*** woops... grammar not compiled?..")
 
 		parser.result = parser.parseRule(begin.name);
-
+		
+		var input = parser.input
 		if (parser.result != FAIL) this._lastMatch = input.substr(0, parser.pos)
 
 		if (this._matchAllInput && (parser.pos < input.length) && !input.slice(parser.pos).match(/^\s*$/)) {
@@ -323,11 +315,11 @@
 		return parser.result;
 	}
 
-	var Parser = function(grit, input, trace) {
+	var Parser = function(grit, input) {
 		this.grit = grit; // grammar rules
 		this.input = input;
 		this.pos = 0;
-		this._traceFlag = !!trace || grit._actionTraceFlag; // compileRule $ => true
+		this._traceFlag = grit._actionTraceFlag; // compileRule $ => true
 		this._trail = []; // trace stack
 		this._last = {}; // rule result memos
 		this._maxFail = -1; // maxFail pos
