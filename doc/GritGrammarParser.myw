@@ -66,9 +66,9 @@ eg
 
 	// d = ["3/4/2015", "3", "4", "2015", rule: 'mdy']
 
-A RegExp rule can contain any RegExp expression (as documented for the host programming language). The result is an Array of string values, first the overall match, then any bracket sub-group matches (three in this example), plus a rule name property with the name of the rule that produced this result.
+A RegExp rule can contain any regular expression (as documented for the host programming language). The result is an array of string values, first the overall match, then any bracket sub-group matches (three in this example), plus a rule name property with the name of the rule that produced this result.
 
-The RegExp rules may contain extra white-space to make them more readable, but all white-space is removed from the rule body (except inside square brackets) before it is given to the RegExp engine as a pattern to match. Explict space chararacter can only be matched if they are inside square brackets.
+The RegExp rules may contain extra white-space to make them more readable, but all white-space is removed from the rule body (except inside square brackets) before it is given to the RegExp engine as a pattern to match. A space character can only be matched if it is inside square brackets.
 
 The date RegExp is simple enough, but larger regular expressions can become quite difficult to work with. To further help readability the Grit grammar allows a regular expression to be broken out into component parts like this:
 
@@ -135,16 +135,14 @@ The PEG rules also allow an expression to employ the PEG prefix operators:
 eg
 	t := !x &y
 
-The !x ensures that there is not an x at this point in the input. The !x will fail if the x rule does match, otherwise !x will succeed and the result will be an empty string (no input is consumed). The &y ensures that there is a y that will match, but it does not consume the y. It will fail if there is not a y.
-
-If the t rule matches then the result will be a list containing two empty lists: [[], []].
+The `!x` ensures that there is not an `x` at this point in the input. The `&y` ensures that there is a `y` that will match, but it does not consume the `y`. If the `t` rule matches then the result will be a list containing two empty lists: `[[], []]`.
 
 Brackets can be used to group sub expressions:
 
 eg
 	g = p (x y)*
 
-The result will be a list that always contains two items: a p result followed by list containing zero or more lists of x and y results:
+The result will be a list that always contains two items: first a `p` result then a list containing zero or more lists of `x` and `y` results:
 
 eg
 	[ p, [[x, y], [x, y], ... ] ]
@@ -237,8 +235,7 @@ eg
 	var sum = Grit`
 		exp   := term (op term)*
 		term  := num / open exp close
-		plus  :~ %add %num
-		add   :~ \s* ([+-])
+		op    :~ \s* ([+-])
 		num   :~ \s* ([0-9]+)
 		open  :~ \s* [(]
 		close :~ \s* [)]
@@ -250,11 +247,10 @@ This allows the previous example to be written as:
 
 eg
 	var sum = Grit`
-		exp    := term (op term)*
-		term   := num / "(" exp ")"
-		plus :~ %add %num
-		num  :~ \s* ([0-9]+)
-		add  :~ \s* ([+-])
+		exp   := term (op term)*
+		term  := num / "(" exp ")"
+		op    :~ \s* ([+-])
+		num   :~ \s* ([0-9]+)
 	`;
 
 
