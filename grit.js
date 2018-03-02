@@ -658,6 +658,15 @@
 		if (!term[0] || term[0] === term) return '';
 		return this._atIndex(term[0]);
 	}
+	
+// helper functions......
+
+	grip.flatten = function(list) {
+    	return list.reduce(function (a, b) {
+        	return a.concat(Array.isArray(b) ? b.flatten() : b);
+    	}, []);
+	}
+
 
 
 // == Expose Grit ============================================================================================
