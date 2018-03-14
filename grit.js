@@ -127,7 +127,7 @@
 					types[i] = arg;
 				}
 			}
-			rules += template[i];
+			rules += template[i].replace(/\\`/g,'`').replace(/\\[$][{]/g,'${');
 		}
 		this._createRules(rules.split(/\n/), types);
 	}
@@ -220,7 +220,10 @@
 						report(["Rule ", rule.name, " ... :: ", act,
 							'\tBad semantic action ', err])
 					}
-				}
+				} else if (typeof act === 'function') {
+					this._action[rule.name] = act;
+				} else retport(["Rule ", rule.name, " ... :: ", act,
+					'\tUnknown semantic action Object?'])
 			}
 		}
 		return errors
@@ -238,14 +241,7 @@
 		var fn;
 		var ax = act.match(/^\s*([a-zA-Z]\w*)\s*(.*)$/)
 		if (!ax) { // (..) => ... or ( ... ) or // ..anything else..
-			var fx = act.match(/^\s*(\([^\)]*\))\s*=>\s*([\s\S]*)/);
-			if (fx) {  // ES6: (...) => ...
-				var body = fx[2]; // (x) => exp...   ==>  function (x) { return ( exp... ) };
-				if (/^[^{]/.test(body)) { body = '{ return ('+body.trim()+')}'; }  // () => {return []} fails without if test
-				fn = eval('(function'+fx[1]+body+')');
-			} else { // ES5: ( function() {...} ) or junk...
-				fn = eval(act);
-			}
+			fn = eval(act);
 		} else {
 			var fun = ax[1]; // function name...
 			if (fun === 'function') { // :: function(...) {... }
@@ -256,8 +252,33 @@
 				fn = fun;
 			}
 		}
-		return fn; // function or string (name of function)
+		return fn; // function, or string (name of function)
 	}
+
+	// grip._compileAction = function (rule, act) {
+	// 	var fn;
+	// 	var ax = act.match(/^\s*([a-zA-Z]\w*)\s*(.*)$/)
+	// 	if (!ax) { // (..) => ... or ( ... ) or // ..anything else..
+	// 		var fx = act.match(/^\s*(\([^\)]*\))\s*=>\s*([\s\S]*)/);
+	// 		if (fx) {  // ES6: (...) => ...
+	// 			var body = fx[2]; // (x) => exp...   ==>  function (x) { return ( exp... ) };
+	// 			if (/^[^{]/.test(body)) { body = '{ return ('+body.trim()+')}'; }  // () => {return []} fails without if test
+	// 			fn = eval('(function'+fx[1]+body+')');
+	// 		} else { // ES5: ( function() {...} ) or junk...
+	// 			fn = eval(act);
+	// 		}
+	// 	} else {
+	// 		var fun = ax[1]; // function name...
+	// 		if (fun === 'function') { // :: function(...) {... }
+	// 			fn = eval('(' + act + ')');
+	// 		} else { //  :: fun ....
+	// 			this._actName[rule.name] = fun; // grammar function name..
+	// 			this._actArgs[rule.name] = ax[2]; // arg string
+	// 			fn = fun;
+	// 		}
+	// 	}
+	// 	return fn; // function or string (name of function)
+	// }
 
 // compose RegExp rule -------------------------------------
 
@@ -661,13 +682,15 @@
 	
 // helper functions......
 
-	grip.flatten = function(list) {
-    	return list.reduce(function (a, b) {
-        	return a.concat(Array.isArray(b) ? b.flatten() : b);
-    	}, []);
-	}
+	if (!Array.prototype.flatten) {
+		Array.prototype.flatten = function () {
+	    	return this.reduce(function (a, b) {
+	        	return a.concat(Array.isArray(b) ? b.flatten() : b);
+	    	}, []);
+		}
+	};
 
-
+	// grip.string = (as) => as.flatten().join('')
 
 // == Expose Grit ============================================================================================
 

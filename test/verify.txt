@@ -240,14 +240,7 @@ sym= % undefined..
   index: 0,
   lastIndex: 3 ]
 -- datetime ----------------
-[ '3/4/2015',
-  '3',
-  '4',
-  '2015',
-  index: 0,
-  input: '3/4...',
-  rule: 'mdy',
-  lastIndex: 8 ]
+<time datetime='2015-3-4'>3/4/2015</time>
 -- expr ----------------
 42
 -- exprn ----------------
@@ -312,3 +305,6 @@ Bad [ '\t' ] [ '', ' ' ]
   rule: 'lines',
   index: 0,
   lastIndex: 60 ]
+-- template literal DSL escapes... ---------
+foo <code>bar</code> baz
+foo <code>bar</code> baz

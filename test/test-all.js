@@ -718,3 +718,23 @@ var tst = `
 `;
 var bs = lines.parse(tst);
 console.log(bs);
+
+console.log("-- template literal DSL escapes... ---------");
+
+var grit = Grit`
+	markup := (code/text)*     :: string
+	code   :~ \` ([^\`]*) \`   :: ${ (_,s) => `<code>${s}</code>` }
+	text   :~ [\s\S][^\`]*     :: (s) => s
+`;
+grit.string = (as) => as.flatten().join('')
+
+console.log(grit.parse("foo `bar` baz"))
+
+var grit = Grit`
+	markup := (code/text)*     :: string
+	code   :~ \` ([^\`]*) \`   :: (_,s) => \`<code>\${s}</code>\`
+	text   :~ [\s\S][^\`]*     :: (s) => s
+`;
+grit.string = (as) => as.flatten().join('')
+
+console.log(grit.parse("foo `bar` baz"))
