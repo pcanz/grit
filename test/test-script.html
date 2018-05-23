@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta lang=en charset="UTF-8">
+	
+	<script src='../node_modules/grit.js'></script>
+
+	<script>
+	
+	function parse(src) {
+		var expr = Grit`
+			expr := mul (("+"/"-") mul)*   :: arith
+			mul  := term (("*"/"/") term)* :: arith
+			term := par / num              :: (t) => t
+			par  := "(" expr ")"           :: (_,e) => e
+			num  :~ \s* (\d+)              :: (_,n) => Number(n)
+		`;
+
+		expr.arith = (n, ns) => ns.reduce((x,[[op],m]) => expr[op.trim()](x,m), n)
+
+		expr['+'] = (x,m) => x+m
+		expr['*'] = (x,m) => x*m
+		expr['-'] = (x,m) => x-m
+		expr['/'] = (x,m) => x/m
+		
+		return expr.parse(src)
+	}	
+	
+	window.calc = function () {
+		var expn = document.getElementById('expn')
+		var ans = document.getElementById('ans')
+		
+		ans.textContent = parse(expn.value)
+	}
+
+	window.onload = function () {
+		calc()
+	}
+	
+	</script>
+<body>
+	<input type=text id=expn onchange=calc() value='1+2*3'> => <code id=ans>?</code>
+</body>
+</html>
