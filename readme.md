@@ -6,11 +6,11 @@ The `grit.js` code has no external dependencies, it is a stand alone library fun
 
 The examples/ folder has `example.js` files together with their output `example.js.txt` files.
 
-The examples employ: `request('grit')` which assumes a `node_modules` folder in parent directory.
+The examples employ: `request('grit')` which assumes the parent of this directory contains a `node_modules` directory with a copy of the `grit.js` code.
 
 ## Usage
 
-The `grit.js` code does have a wrapper to export itself for use in Node.js, but if no `module.exports` is available then `grit.js` will load itself as `Grit` in the local `this` context, or failing that into a `window` or `global` name-space.
+The `grit.js` code has a wrapper to export itself for use in Node.js, but if no `module.exports` is available then `grit.js` will load itself as `Grit` in the local `this` context, or failing that into a `window` or `global` name-space.
 
 1.	module.exports = Grit
 2.	this.Grit = Grit
@@ -45,7 +45,7 @@ To run all the examples as a regression test, checking against their file result
 
 	> npm test
 
-The test command will copy the `grit.js` file from this directory into `node_modules` folder of the parent directory to ensure the latest version is being loaded by examples that use: `request{`grit`)`.
+The test command will copy the `grit.js` file from this directory into `node_modules` folder of the parent directory to ensure the latest version is being loaded by examples that use: `request('grit')`.
 
 To run an example:
 

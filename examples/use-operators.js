@@ -11,12 +11,12 @@ console.log(usefoo.parse('xxx'))
 
 // ---
 
-const express = require('../lib/express.js')
+const opex = require('../lib/operators.js')
 
-Grit.use(express) // operators, express
+Grit.use(opex) // operators, expression
 
 var expr = Grit`
-	expr  := token*            :: express
+	expr  := token*            :: expression
 	token :~ [-+*/]+ | [0-9]+
 `;
 

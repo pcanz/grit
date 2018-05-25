@@ -4,14 +4,14 @@
     <meta lang=en charset="UTF-8">
 	
 	<script src='../grit.js'></script>
-	<script src='../lib/express.js' defer></script>
+	<script src='../lib/operators.js' defer></script>
 
 	<script>
 	
 	function parse(src) {
 	
 		var expr = Grit`
-			expr  := token*            :: express
+			expr  := token*            :: expression
 			token :~ [-+*/]+ | [0-9]+
 		`;
 

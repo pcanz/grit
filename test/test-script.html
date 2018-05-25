@@ -23,7 +23,7 @@
 		expr['-'] = (x,m) => x-m
 		expr['/'] = (x,m) => x/m
 		
-		return expr.parens(expr.parse(src))
+		return JSON.stringify(expr.parse(src))
 	}	
 	
 	window.calc = function () {
