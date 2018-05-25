@@ -16,4 +16,4 @@ var xyz = Grit`
 	z   :~ z
 `;
 
-console.log(xyz.parse('y')) // [ [], 'y']
+console.log(xyz.parse('y')) // [ [], [ 'y' ], [] ]

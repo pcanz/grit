@@ -4,24 +4,22 @@
     <meta lang=en charset="UTF-8">
 	
 	<script src='../grit.js'></script>
+	<script src='../lib/express.js' defer></script>
 
 	<script>
 	
 	function parse(src) {
+	
 		var expr = Grit`
-			expr := mul (("+"/"-") mul)*   :: arith
-			mul  := term (("*"/"/") term)* :: arith
-			term := par / num              :: (t) => t
-			par  := "(" expr ")"           :: (_,e) => e
-			num  :~ \s* (\d+)              :: (_,n) => Number(n)
+			expr  := token*            :: express
+			token :~ [-+*/]+ | [0-9]+
 		`;
 
-		expr.arith = (n, ns) => ns.reduce((x,[[op],m]) => expr[op.trim()](x,m), n)
-
-		expr['+'] = (x,m) => x+m
-		expr['*'] = (x,m) => x*m
-		expr['-'] = (x,m) => x-m
-		expr['/'] = (x,m) => x/m
+		expr.operators`
+			xfy    **
+			yfx    * /
+			yfx    + -
+		`;
 		
 		return expr.parens(expr.parse(src))
 	}	

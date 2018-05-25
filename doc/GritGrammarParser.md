@@ -26,11 +26,13 @@ In a Grit grammar the PEG grammar rules are introduced with a `:=` symbol, and t
 	var e = expr.parse(s)
 	console.log(s,'=>', JSON.stringify(e))
 
-	// 1+2*3 => ["1",["+",["2",["*","3"]]]]
+	// 1+2*3 => [["1",[]],[[["+"],["2",[[["*"],"3"]]]]]]
 ```
 JavaScript 2015 ES6 has tag template strings that can be used to embed DSLs (Domain Specific Languages), and this works well for Grit grammar rules. In particular the backslash characters in regular expressions do not need to be double escaped. Using earlier versions of JavaScript is not quite as neat.
 
-The Grit grammar rules may be extended with an `::` to introduce an action function, or semantic action, that can translate the grammar rule parse results. An action function can be thought of as a type-translator that transforms the parser rule result into some desired data-type.
+By default the parse tree result is a nested list structure built by the grammar rules. In JavaScript the lists are Arrays, and the empty array values result from rules or repeat groups that did not find anything to match. As you can see the parse tree structure can become hard to read, but the rule results can be transformed into simpler application specific data structures. 
+
+To transform a rule result the Grit grammar rules can be extended with an `::` to introduce an action function, or semantic action, that can translate the grammar rule parse results. An action function can be used as a type-translator to transform the parser rule result into some desired data-type.
 
 The next example extends the first example with action functions that evaluate an arithmetic expression into a numeric value. The grammar has also been extended to accept white space, and allow sub expressions in parentheses.
 
@@ -59,7 +61,7 @@ The next example extends the first example with action functions that evaluate a
 	console.log(s,'=>', e) //  2 * (3+4)  => 14
 ```
 
-This example demonstrates many of the Grit grammar features, now to explained all that we will start with much simpler examples.
+This example demonstrates many of the Grit grammar features, now to explained all this we will start with much simpler examples.
 
 
 ##	RegExp Rules
@@ -144,7 +146,7 @@ An action function can translate a RegExp result into whatever parse result is d
 	console.log("m/d/y =>", date) // m/d/y => <time datetime='2015-2-3'>2/3/2015</time>
 ```
 
-The JavaScript regular expression engine is very fast, and it can express quite complex pattern matching rules. For this reason you may want to match as much as possible with large Regexp rules. On the other hand PEG rules make a better grammar specification that is portable across host programming languages.
+The JavaScript regular expression engine is very fast, and it can express quite complex pattern matching rules. For this reason you may want to match as much as possible with large RegExp rules. On the other hand PEG rules make a better grammar specification that is portable across host programming languages.
 
 
 ##	PEG Rules
@@ -266,11 +268,12 @@ In general we need a PEG rule:
 
 	var s = "1+2+3+4"
 	var n = sum.parse(s)
-	console.log(s, '=>', n) // 1+2+3+4 => ['1',[['+','2'],['+','3'],['+','4']]]
+	console.log(s, '=>', n)
+	// 1+2+3+4 => [ '1', [ [ '+', '2' ], [ '+', '3' ], [ '+', '4' ] ] ]
 ```
 The parse result for "1+2+3+4" now contains *all* the matched terms. The literal `'+'` in single quotes is a shorthand equivalent to a reference to a RegExp rule that will match the quoted text.
 
-The parse tree has a simple default format where the regular expression rules match input strings, and the PEG rules build a list structure. This is a good start, and may be sufficient for some applications. An application can "walk" the parse tree to generate code, or to translate the result into a data structure or a string with a different format.
+The parse tree has a simple default format where the regular expression rules match input strings, and the PEG rules build a list (Array) structure. This is a good start, and may be sufficient for some applications. An application can "walk" the parse tree to generate code, or to translate the result into a data structure or a string with a different format.
 
 An action function can be a JavaScript function after the `::` symbol, or it can be the name of an action function. Usually a named function will be defined as a property of the grammar object, but Grit library functions can also be used.
 
@@ -309,7 +312,7 @@ We can use an action function to add up the numbers like this:
 ```
 Many traditional grammar parsers use a separate lexical scanner to skip white-space and recognize symbols, words, and numbers as tokens. PEG grammar rules integrate this into the grammar rules, so white-space must be dealt with explicitly.
 
-In a PEG rule quotes provide a quick way to match a literal string without the need for an explicit RegExpr rule. Double quotes do the same thing as single quotes, but they will also skip any white-space before the literal match.
+In a PEG rule quotes provide a quick way to match a literal string without the need for an explicit RegExp rule. Double quotes do the same thing as single quotes, but they will also skip any white-space before and after the literal match.
 
 PEG rules can use recursion to handle nested sub expressions, as in the next example:
 
@@ -373,24 +376,8 @@ The `reduce` function can be used to evaluate left (or right) associate operator
 
 ## Result Types
 
-Without action functions the grammar rule parser will generate a parse tree of nested lists (JavaScript Arrays) and input string matched values. By default the list structure will be simplified to remove redundant nesting in order to make the parse tree results a little easier to read.
+Without action functions the grammar rule parser will generate a parse tree of nested lists (JavaScript Arrays) and input string matched values. 
 
-This allows you to quickly check that your grammar rules are matching input strings as you expect, before adding any action functions.
-
-Action functions are given the rule result as argument values, so the full rule results may be preserved without any simplification by using an action function such as:
-
-``` eg
-	const Grit = require('grit')
-	
-	var xyz = Grit`
-		xyz := x* y+ z? :: (...xs) => xs
-		x   :~ x
-		y   :~ y
-		z   :~ z
-	`;
-	
-	console.log(xyz.parse('y')) // [ [], ['y'], []]
-```
 By default the result from a RegExp rule will be the full string match, regardless of any capture groups. An action function is given all the RegExp matched values as arguments, so selected capture group result(s) can be returned. 
 
 An action function may return almost any data value result, except for a two special values. A `null` value result will cause the rule to fail, and an `undefined` result will throw an exception (the action function is broken).
@@ -402,7 +389,6 @@ The ability for a action to cause a rule to fail is important in some applicatio
 		sym :~ (alpha|beta|gamma|....)
 	`;
 ```
-
 This approach is very fast, but it is a linear search, so for a large symbol table another approach may be better.
 
 In addition to matching the input an application may also want to map the input match into a symbol value. To do this an action function can be used to lookup a match in a symbol table:
@@ -506,51 +492,8 @@ Another simple debug aid is use an action to log the result of a rule:
 
 ```
 
------
+---
 
-##  Appendix: Grit In Grit
-
-The grammar for the Grit grammar rules can be defined in Grit. The interpretation of the regular expression syntax and the semantic action syntax depends on the host programming language.
-
-``` eg
-	var grit = Grit`
-		grit  := ws (rule ws)+ :: rules
-		rule  := id ws body ('::' act)? :: rule
-		body  := ':=' peg / ':~' rex / '::' act
-		peg   := seq ('/' seq)*
-		seq   := sp (pre? term rep? sp (!next ws)? )+
-		term  := id / quote / '(' peg ')'
-		rex   := sp (reg (!'::' !next ws)?)*
-		act   := (line (!next ws)?)*
-		reg   :~ (?: [^:\n\r]* (?: :[^:])?)*
-		line  :~ [^\n\r]*
-		next  :~ [\n\r]+ [ \t]* %id \s* :[=~:]
-		id    :~ %name | %quote
-		name  :~ [a-zA-Z]\w*
-		quote :~ '[^']*' | "[^"]*"
-		pre   :~ [&!]
-		rep   :~ [*+?]
-		sp    :~ [ \t]*
-		ws    :~ \s*
-	`;
-
-	grit.rules = (ws, rules) => rules.map((rule)=>rule[0])
-
-	grit.rule = function (name, body, actn) {
-		var type = body[0][1]; // :=|:~|::
-		var body = grit.flatten(body[1]);
-		var act = actn[0]? grit.flatten(actn[0][1]) : "";
-		if (type === '::') {act = body.trim(); body = "";}
-		var term = {name:name[0], type, body, act};
-		return term;
-	}
-
-	grit.flatten = function (list) {
-		return list.reduce(function (a, b) {
-			return a.concat(Array.isArray(b) ? grit.flatten(b) : b);
-		}, []);
-	}
-```
 
 <style type="text/css">
 	body {

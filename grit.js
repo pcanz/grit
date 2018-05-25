@@ -238,7 +238,7 @@
 					this._action[rule.name] = act;
 				} else retport(["Rule ", rule.name, " ... :: ", act,
 					'\tUnknown action function Object?'])
-			} else { // default action...
+			} else { // default action...  null for GRIT bootstrap...
 				if (rule.type === REGEXP_RULE)
 					this._action[rule.name] = this._defaultRegAction;
 				else if (rule.type === PEG_RULE)
@@ -702,7 +702,8 @@
 		if (!parser.grit._rule[qt]) { // define a new rule for qt...
 			var str = ruleTree[1] || ruleTree[2]; // '...' | "..."
 			var literal = str.replace(/([^a-zA-Z0-9])/g,"\\$1")
-			var regex = new RegExp("^(?:"+(ruleTree[2]?'\\s*':'')+"("+literal+"))");
+			var sp = ruleTree[2]?'\\s*':''
+			var regex = new RegExp("^(?:"+sp+"("+literal+")"+sp+")");
 			parser.grit._rule[qt] = regex;
 			parser.grit._action[qt] = (_, x) => x;
 		}
@@ -769,7 +770,7 @@
 	// Action defaults -- must be after GRIT bootstrap .........
 
 	grip._defaultRegAction = (x) => x;
-	grip._defaultPegAction = grip._simplify;
+	grip._defaultPegAction = null; //grip._simplify;
 
 
 	// user extensions...........................
@@ -800,6 +801,3 @@
 }());
 
 // console.log("grit.js.....");
-// var Grit = require("./grit.js");
-
-// console.log("Grit 2015-05, run test.js to try it out....");

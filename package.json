@@ -2,9 +2,9 @@
   "name": "grit",
   "version": "2.0.0",
   "description": "grammar parser",
-  "main": "node_modules/grit.js",
+  "main": "./grit.js",
   "bin": {
-    "grit": "node_modules/grit.js"
+    "grit": "./grit.js"
   },
   "directories": {
     "doc": "doc",
@@ -13,9 +13,8 @@
   "dependencies": {},
   "devDependencies": {},
   "scripts": {
-    "test": "node test/test.js ./examples/*.js",
-	"doco": "node bin/markdown.js doc/*.md",
-	"all-results": "node examples/*.js >>>> examples/*.js.txt "
+    "test": "cp grit.js ../node_modules/grit.js && node test/test.js ./examples/*.js",
+	"doco": "node bin/markdown.js doc/*.md "
   },
   "keywords": [
     "grammar",

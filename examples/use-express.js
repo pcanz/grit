@@ -11,7 +11,9 @@ console.log(usefoo.parse('xxx'))
 
 // ---
 
-Grit.use('express') // operators, express
+const express = require('../lib/express.js')
+
+Grit.use(express) // operators, express
 
 var expr = Grit`
 	expr  := token*            :: express

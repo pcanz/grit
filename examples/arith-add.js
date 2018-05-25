@@ -22,7 +22,8 @@ var sum = Grit`
 
 var s = "1+2+3+4"
 var n = sum.parse(s)
-console.log(s, '=>', n) // 1+2+3+4 => [ '1', [ [ '+', '2' ], [ '+', '3' ], [ '+', '4' ] ] ]
+console.log(s, '=>', n)
+// 1+2+3+4 => [ '1', [ [ '+', '2' ], [ '+', '3' ], [ '+', '4' ] ] ]
 
 // OK for the syntax, now lets add up the numbers ...
 

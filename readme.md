@@ -1,10 +1,14 @@
 #	ReadMe
 
-This project is for maintenance of the `grit.js` grammar parser source code.
-
-The `grit.js` code is in: `node_modules/grit.js` so that tests and examples can use it with: `request('grit')`.
+This project is for maintenance of the `grit.js` grammar parser source code. For more information see the documents in the doc/ folder.
 
 The `grit.js` code has no external dependencies, it is a stand alone library function.
+
+The examples/ folder has `example.js` files together with their output `example.js.txt` files.
+
+The examples employ: `request('grit')` which assumes a `node_modules` folder in parent directory.
+
+## Usage
 
 The `grit.js` code does have a wrapper to export itself for use in Node.js, but if no `module.exports` is available then `grit.js` will load itself as `Grit` in the local `this` context, or failing that into a `window` or `global` name-space.
 
@@ -12,8 +16,6 @@ The `grit.js` code does have a wrapper to export itself for use in Node.js, but 
 2.	this.Grit = Grit
 3.	window.Grit = Grit
 4.	global.Grit = Grit
-
-## Usage
 
 ### Node.js Use
 
@@ -42,6 +44,8 @@ The `grit.js` code does have a wrapper to export itself for use in Node.js, but 
 To run all the examples as a regression test, checking against their file results:
 
 	> npm test
+
+The test command will copy the `grit.js` file from this directory into `node_modules` folder of the parent directory to ensure the latest version is being loaded by examples that use: `request{`grit`)`.
 
 To run an example:
 

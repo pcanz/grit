@@ -12,15 +12,18 @@ var expr = Grit`
 
 var s = "1+2*3"
 var e = expr.parse(s)
-console.log(s,'=>', JSON.stringify(e)) // 1+2*3 => ["1",["+",["2",["*","3"]]]]
+console.log(s,'=>', JSON.stringify(e))
+// 1+2*3 => [["1",[]],[[["+"],["2",[[["*"],"3"]]]]]]
 
 var s = "2*3+1"
 var e = expr.parse(s)
-console.log(s,'=>', JSON.stringify(e)) // 2*3+1 => [["2",["*","3"]],["+","1"]]
+console.log(s,'=>', JSON.stringify(e))
+// 2*3+1 => [["2",[[["*"],"3"]]],[[["+"],["1",[]]]]]
 
 var s = "1+2*3+4"
 var e = expr.parse(s)
-console.log(s,'=>', JSON.stringify(e)) // 1+2*3+4 => ["1",[["+",["2",["*","3"]]],["+","4"]]]
+console.log(s,'=>', JSON.stringify(e))
+// 1+2*3+4 => [["1",[]],[[["+"],["2",[[["*"],"3"]]]],[["+"],["4",[]]]]]
 
 // Syntax looks ok, so now with arith semantic actions...
 
